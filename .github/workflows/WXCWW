@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>مولد QR Code إحترافي</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+      font-size: 32px;
+      color: #1e293b;
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+    }
+
+    input[type="text"] {
+      width: 90%;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 8px;
+      border: none;
+      border-radius: 8px;
+      background-color: #2563eb;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .color-picker-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px auto;
+      width: 90%;
+    }
+
+    .color-picker-label {
+      font-size: 16px;
+      font-weight: bold;
+      color: #334155;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    .color-picker-wrapper {
+      position: relative;
+      width: 50px;
+      height: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.15);
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid #94a3b8;
+      transition: border-color 0.2s ease;
+    }
+
+    .color-picker-wrapper:hover {
+      border-color: #1e293b;
+    }
+
+    .color-picker-wrapper input[type="color"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .color-preview {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="page-title">مولد QR Code إحترافي</h1>
+
+  <input type="text" id="inputText" placeholder="أدخل الرابط هنا" />
+
+  <div class="color-picker-group">
+    <span class="color-picker-label">لون النقاط (1):</span>
+    <div class="color-picker-wrapper">
+      <div class="color-preview" id="colorBox1" style="background-color: #0f172a;"></div>
+      <input type="color" id="color1" value="#0f172a" onchange="document.getElementById('colorBox1').style.backgroundColor = this.value" />
+    </div>
+  </div>
+
+  <div class="color-picker-group">
+    <span class="color-picker-label">لون النقاط (2):</span>
+    <div class="color-picker-wrapper">
+      <div class="color-preview" id="colorBox2" style="background-color: #2563eb;"></div>
+      <input type="color" id="color2" value="#2563eb" onchange="document.getElementById('colorBox2').style.backgroundColor = this.value" />
+    </div>
+  </div>
+
+  <div class="color-picker-group">
+    <span class="color-picker-label">لون الخلفية:</span>
+    <div class="color-picker-wrapper">
+      <div class="color-preview" id="bgColorBox" style="background-color: #ffffff;"></div>
+      <input type="color" id="bgColor" value="#ffffff" onchange="document.getElementById('bgColorBox').style.backgroundColor = this.value" />
+    </div>
+  </div>
+
+  <p style="font-weight: bold; color: #334155; margin-top: 20px;">اختر صورة (شعار) لإضافتها داخل QR:</p>
+<input type="file" id="logoInput" accept="image/*" />
+
+
+  <div>
+    <button id="generateBtn">توليد QR</button>
+    <button id="downloadBtn" disabled>تحميل QR كصورة</button>
+  </div>
+
+  <div id="qrcode"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <script>
+    let qrCode = null;
+
+    const inputText = document.getElementById("inputText");
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const logoInput = document.getElementById("logoInput");
+
+    let logoUrl = "";
+
+    logoInput.addEventListener("change", () => {
+      const file = logoInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          logoUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    generateBtn.addEventListener("click", () => {
+      const value = inputText.value.trim();
+      if (!value) {
+        alert("يرجى إدخال رابط صحيح.");
+        return;
+      }
+
+      const color1 = document.getElementById("color1").value;
+      const color2 = document.getElementById("color2").value;
+      const bgColor = document.getElementById("bgColor").value;
+
+      if (qrCode) document.getElementById("qrcode").innerHTML = "";
+
+      qrCode = new QRCodeStyling({
+        width: 500,
+        height: 500,
+        data: value,
+        image: logoUrl || undefined,
+        dotsOptions: {
+          color: color1,
+          gradient: {
+            type: "linear",
+            rotation: 90,
+            colorStops: [
+              { offset: 0, color: color1 },
+              { offset: 1, color: color2 },
+            ],
+          },
+          type: "rounded"
+        },
+        backgroundOptions: {
+          color: bgColor
+        },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 8
+        }
+      });
+
+      qrCode.append(document.getElementById("qrcode"));
+      downloadBtn.disabled = false;
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (qrCode) {
+        qrCode.download({ name: "qr-code", extension: "png" });
+      }
+    });
+  </script>
+  <script type="text/javascript"> var infolinks_pid = 3438996; var infolinks_wsid = 0; </script> <script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
+</body>
+</html>
