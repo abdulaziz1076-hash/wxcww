@@ -56,7 +56,7 @@ button:hover { background-color: #0d8ddb; }
       <option value="Qatar">قطر</option>
       <option value="Bahrain">البحرين</option>
       <option value="Oman">عمان</option>
-      <option value="UK">المملكة المتحدة</option>
+      <option value="United Kingdom">المملكة المتحدة</option>
       <option value="Canada">كندا</option>
       <option value="Australia">أستراليا</option>
     </select>
@@ -69,6 +69,7 @@ button:hover { background-color: #0d8ddb; }
 </div>
 
 <script>
+// تحديد أفضل أوقات التغريد بناءً على الساعة الحالية (المنطق ممتاز)
 function getDynamicTimeRange(hour){
   if(hour < 9) return {start:"06:00",end:"09:00",reason:"في الصباح الناس يتصفحون تويتر قبل العمل أو الدراسة."};
   if(hour < 12) return {start:"12:00",end:"14:00",reason:"في وقت الظهيرة تكون استراحة الغداء ومتابعة الأخبار."};
@@ -93,9 +94,10 @@ async function getTrend(){
     trendBox.innerHTML = `<p>اختر دولة أولاً</p>`;
     return;
   }
-
+  
+  // نستخدم مسار API النسبي
   try {
-    const resp = await fetch(`./trends/${encodeURIComponent(country)}`);
+    const resp = await fetch(`/trends/${encodeURIComponent(country)}`);
     const data = await resp.json();
 
     trendBox.innerHTML = "";
@@ -126,8 +128,8 @@ async function getTrend(){
     });
 
   } catch (e) {
-    trendBox.innerHTML = `<p>فشل في التحميل، حاول لاحقاً.</p>`;
-    console.error(e);
+    trendBox.innerHTML = `<p>فشل في جلب الترند من الخادم. حاول لاحقاً.</p>`;
+    console.error("Fetch Error:", e);
   }
 }
 </script>
