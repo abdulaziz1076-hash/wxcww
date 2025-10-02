@@ -2,69 +2,155 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>ترند تويتر</title>
+<title>ترند تويتر + أفضل وقت للتفاعل</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-  select, button { padding: 10px; margin: 10px 0; font-size: 16px; }
-  ul { list-style: none; padding: 0; }
-  li { background: #fff; margin: 5px 0; padding: 10px; border-radius: 5px; }
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #f0f2f5;
+  direction: rtl;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+header {
+  background: #1da1f2;
+  color: white;
+  font-size: 26px;
+  font-weight: bold;
+  padding: 20px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.container {
+  max-width: 1200px;
+  margin: 30px auto;
+}
+select, button {
+  padding: 12px 18px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccd6dd;
+  margin: 5px;
+}
+button {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover { background-color: #0d8ddb; }
+
+#time-reason {
+  background: #e8f4fd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #14171a;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trends-wrapper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+.trend-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: right;
+  font-size: 20px;
+}
+.trend-card.hot { border-left: 4px solid #1da1f2; }
+.trend-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.trend-card a {
+  text-decoration: none;
+  color: #14171a;
+}
+.trend-card a:hover { color: #1da1f2; }
+.time-box { margin-top: 10px; font-size: 16px; color: #555; }
+
+@media (max-width: 1000px) { .trends-wrapper { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .trends-wrapper { grid-template-columns: repeat(1, 1fr); font-size: 22px; } }
 </style>
 </head>
 <body>
-<h1>ترندات تويتر</h1>
+<header>الترند الحالي - أوقات التفاعل</header>
+<div class="container">
+  <div>
+    <label for="country">اختر الدولة:</label>
+    <select id="country">
+      <option value="Worldwide">العالم</option>
+      <option value="Saudi Arabia">السعودية</option>
+      <option value="United Arab Emirates">الإمارات</option>
+      <option value="Egypt">مصر</option>
+      <option value="United States">الولايات المتحدة</option>
+      <!-- أضف المزيد حسب الحاجة -->
+    </select>
+    <button onclick="getTrend()">عرض الترند</button>
+  </div>
 
-<label for="country">اختر الدولة:</label>
-<select id="country">
-  <option value="">-- اختر --</option>
-  <option value="united-states">الولايات المتحدة</option>
-  <option value="saudi-arabia">السعودية</option>
-  <option value="uae">الإمارات</option>
-  <option value="egypt">مصر</option>
-  <option value="uk">المملكة المتحدة</option>
-</select>
-<button id="loadTrends">تحميل الترندات</button>
-
-<ul id="trendsList"></ul>
+  <div id="time-reason" style="display:none;"></div>
+  <div id="trend" class="trends-wrapper"></div>
+</div>
 
 <script>
-  const btn = document.getElementById('loadTrends');
-  const trendsList = document.getElementById('trendsList');
-  const countrySelect = document.getElementById('country');
+function getDynamicTimeRange(hour){
+  if(hour < 9) return {start:"06:00",end:"09:00",reason:"في الصباح الناس يتصفحون تويتر قبل العمل أو الدراسة."};
+  if(hour < 12) return {start:"12:00",end:"14:00",reason:"في وقت الظهيرة تكون استراحة الغداء ومتابعة الأخبار."};
+  if(hour < 20) return {start:"17:00",end:"20:00",reason:"في المساء أعلى نشاط للمتابعين بعد العمل."};
+  return {start:"20:00",end:"23:00",reason:"في المساء المتأخر نشاط المتابعين مرتفع قبل النوم."};
+}
 
-  btn.addEventListener('click', async () => {
-    const country = countrySelect.value;
-    trendsList.innerHTML = "<li>جاري التحميل...</li>";
+async function getTrend() {
+  const country = document.getElementById("country").value;
+  const trendBox = document.getElementById("trend");
+  const timeReasonBox = document.getElementById("time-reason");
+  trendBox.innerHTML = `<p>جاري التحميل...</p>`;
+  timeReasonBox.style.display = "none";
 
-    if (!country) {
-      trendsList.innerHTML = "<li>الرجاء اختيار دولة</li>";
+  try {
+    // رابط سيرفرك على Render
+    const response = await fetch(`https://wxcww.onrender.com/trends/${encodeURIComponent(country)}`);
+    const data = await response.json();
+
+    trendBox.innerHTML = "";
+
+    if(data.error){
+      trendBox.innerHTML = `<p>${data.error}</p>`;
       return;
     }
 
-    try {
-      const response = await fetch(`https://wxcww.onrender.com/trends/${country}`);
-      const data = await response.json();
-
-      if (data.error) {
-        trendsList.innerHTML = `<li>${data.error}</li>`;
-        return;
-      }
-
-      if (data.length === 0) {
-        trendsList.innerHTML = "<li>لا توجد ترندات حالياً</li>";
-        return;
-      }
-
-      trendsList.innerHTML = "";
-      data.slice(0, 10).forEach(trend => {
-        const li = document.createElement('li');
-        li.textContent = trend;
-        trendsList.appendChild(li);
-      });
-
-    } catch (err) {
-      trendsList.innerHTML = "<li>حدث خطأ أثناء تحميل الترندات</li>";
+    if(!data.length){
+      trendBox.innerHTML = `<p>لا توجد ترندات لهذه الدولة حالياً.</p>`;
+      return;
     }
-  });
+
+    const localHour = new Date().getHours();
+    const tweetTimeRange = getDynamicTimeRange(localHour);
+    timeReasonBox.style.display = "block";
+    timeReasonBox.innerHTML = `<b>أفضل وقت للتفاعل حالياً :</b> ${tweetTimeRange.start} - ${tweetTimeRange.end}<br><b>السبب:</b> ${tweetTimeRange.reason}`;
+
+    data.slice(0,10).forEach((t)=>{
+      const div = document.createElement("div");
+      div.className = "trend-card hot";
+      div.innerHTML = `<a href="${t.link}" target="_blank">${t.name}</a>
+        <div class="time-box">آخر تحديث: الآن</div>`;
+      trendBox.appendChild(div);
+    });
+
+  } catch(e) {
+    trendBox.innerHTML = `<p>فشل في التحميل، حاول لاحقاً.</p>`;
+    console.error(e);
+  }
+}
 </script>
 </body>
 </html>
