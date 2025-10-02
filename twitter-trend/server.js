@@ -1,13 +1,16 @@
 // server.js
 const express = require("express");
-const cors = require("cors");
+const cors = require = require("cors");
 const path = require("path");
 const puppeteer = require("puppeteer");
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+// استخدم منفذ 3000 أو 8080 كـ Fallback في حالة لم يحدد Render المنفذ
+const PORT = process.env.PORT || 8080; 
 
 app.use(cors());
+
+// *** التعديل الأهم: لخدمة index.html والملفات الثابتة من مجلد public ***
 app.use(express.static(path.join(__dirname, "public")));
 
 // خريطة الأسماء التي سيقبلها الواجهة إلى slugs في trends24
@@ -27,18 +30,25 @@ const COUNTRY_SLUGS = {
   "Turkey": "turkey",
   "France": "france",
   "Germany": "germany",
+  // التأكد من أن المفتاح يطابق قيمة الـ <option> في index.html
   "United Kingdom": "united-kingdom",
   "Canada": "canada",
   "Australia": "australia"
-  // أضف المزيد هنا حسب حاجتك (key = ما في الـ <select> ، value = slug في trends24)
 };
 
 let browserPromise = null;
 // lazy-launch browser to reuse instance between requests
 async function getBrowser() {
   if (browserPromise) return browserPromise;
+  // إعدادات Puppeteer لبيئة Render (مهمة جداً للعمل على الخادم)
   browserPromise = puppeteer.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox", 
+      "--disable-setuid-sandbox", 
+      // قد تكون هذه مفيدة لتحسين الأداء على الخوادم البعيدة
+      "--single-process", 
+      "--disable-dev-shm-usage"
+    ],
     headless: "new"
   });
   return browserPromise;
@@ -55,6 +65,7 @@ app.get("/trends/:country", async (req, res) => {
   const url = `https://trends24.in/${slug}/`;
   let browser;
   try {
+    // استخدم instance المتصفح الحالي
     browser = await getBrowser();
     const page = await (await browser).newPage();
 
@@ -69,9 +80,9 @@ app.get("/trends/:country", async (req, res) => {
     // اذهب للرابط وانتظر شبكة خاملة
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 
-    // جرب أكثر من سيلكتور لأن الموقع قد يغير الهيكلة
+    // مجموعة من الـ selectors لتغطية أي تغيير في هيكل الموقع
     const selectors = [
-      "ol.trending-list li a",            // قديم / شائع
+      "ol.trending-list li a",          
       ".trend-card__list li .trend-name a",
       ".trend-card a",
       ".trend-card li a",
@@ -92,7 +103,7 @@ app.get("/trends/:country", async (req, res) => {
           if (link && link.startsWith("/")) {
             link = new URL(link, "https://trends24.in").href;
           }
-          // لو الرابط هو hashtag بحث تويتر، نفضل توجيه المستخدم لبحث تويتر
+          // توجيه المستخدم مباشرة لبحث تويتر إذا لم يكن الرابط صحيحاً
           if (!link || link.includes("trends24")) {
             const q = encodeURIComponent(name);
             link = `https://twitter.com/search?q=${q}`;
@@ -101,21 +112,24 @@ app.get("/trends/:country", async (req, res) => {
         })
       );
 
-      if (trends.length > 0) break; // وجدنا عناصر، لا نحتاج تجارب أخرى
+      if (trends.length > 0) break; // وجدنا عناصر، نخرج
     }
+    
+    // إغلاق الصفحة مباشرة بعد الانتهاء لتحرير الموارد
+    await page.close();
 
     // تأكد أن النتائج غير فارغة
     if (!trends || trends.length === 0) {
-      // ممكن الموقع استعمل طريقة تحميل ديناميكية مختلفة
       return res.json({ error: "لا توجد ترندات أو تغيّرت بنية المصدر" });
     }
 
-    // أرسل أول 10 عناصر بصيغة بسيطة
+    // أرسل أول 10 عناصر
     res.json(trends.slice(0, 10));
-    await page.close();
+
   } catch (err) {
     console.error("Scrape error:", err && err.message ? err.message : err);
-    return res.status(500).json({ error: "فشل في جلب الترند" });
+    // حالة 503 تدل على أن الخدمة غير متاحة مؤقتاً (قد يكون بسبب حظر أو خطأ في Puppeteer)
+    return res.status(503).json({ error: "فشل في جلب الترند من المصدر الخارجي" });
   }
 });
 
