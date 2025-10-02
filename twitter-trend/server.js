@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
@@ -9,37 +10,34 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.static("public"));
 
-const COUNTRY_CODES = {
-  "Worldwide": "worldwide",
-  "Saudi Arabia": "saudi-arabia",
-  "United Arab Emirates": "united-arab-emirates",
-  "United States": "united-states",
-  "Egypt": "egypt",
-  "India": "india"
-};
+// قائمة الدول المدعومة في trends24
+const supportedCountries = ["united-states", "saudi-arabia", "uae", "egypt", "uk"];
 
 app.get("/trends/:country", async (req, res) => {
-  const country = req.params.country;
-  const code = COUNTRY_CODES[country];
-  if(!code) return res.status(400).json({ error: "دولة غير مدعومة" });
+  const country = req.params.country.toLowerCase();
+
+  if (!supportedCountries.includes(country)) {
+    return res.json({ error: "دولة غير مدعومة" });
+  }
+
+  const url = `https://trends24.in/${country}/`;
 
   try {
-    const url = `https://trends24.in/${code}/`;
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
+    const response = await axios.get(url);
+    const $ = cheerio.load(response.data);
     const trends = [];
-    $(".trend-card .trend-name").each((i, el) => {
-      if(i>=10) return false; // أول 10 ترندات
-      trends.push({
-        name: $(el).text(),
-        link: $(el).attr("href")
-      });
+
+    $("ol.trending-list li a").each((i, el) => {
+      trends.push($(el).text().trim());
     });
-    res.json({ trends });
-  } catch(err) {
-    console.error(err.message);
-    res.status(500).json({ error: "فشل في جلب الترند" });
+
+    res.json(trends);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "حدث خطأ في السيرفر" });
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
