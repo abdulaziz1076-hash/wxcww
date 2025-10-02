@@ -3,57 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <title>ترند تويتر + أفضل وقت للتفاعل</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #f0f2f5;
+  direction: rtl;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+header {
+  background: #1da1f2;
+  color: white;
+  font-size: 26px;
+  font-weight: bold;
+  padding: 20px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.container {
+  max-width: 1200px;
+  margin: 30px auto;
+}
+select, button {
+  padding: 12px 18px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccd6dd;
+  margin: 5px;
+}
+button {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover { background-color: #0d8ddb; }
+
+#time-reason {
+  background: #e8f4fd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #14171a;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trends-wrapper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+.trend-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: right;
+  font-size: 20px;
+}
+.trend-card.hot { border-left: 4px solid #1da1f2; }
+.trend-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.trend-card a {
+  text-decoration: none;
+  color: #14171a;
+}
+.trend-card a:hover { color: #1da1f2; }
+.time-box { margin-top: 10px; font-size: 16px; color: #555; }
+
+@media (max-width: 1000px) { .trends-wrapper { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .trends-wrapper { grid-template-columns: repeat(1, 1fr); font-size: 22px; } }
+</style>
 </head>
 <body>
+<header>الترند الحالي - أوقات التفاعل</header>
 <div class="container">
-  <h1>ترندات تويتر حسب الدولة</h1>
-
-  <select id="country-select">
-    <option value="">اختر الدولة</option>
-    <option value="united-arab-emirates">الإمارات</option>
-    <option value="saudi-arabia">السعودية</option>
-    <option value="egypt">مصر</option>
-    <option value="kuwait">الكويت</option>
-    <option value="qatar">قطر</option>
-    <option value="bahrain">البحرين</option>
-    <option value="oman">عُمان</option>
-    <option value="yemen">اليمن</option>
-    <option value="iraq">العراق</option>
-    <option value="jordan">الأردن</option>
-    <option value="lebanon">لبنان</option>
-    <option value="morocco">المغرب</option>
-    <option value="tunisia">تونس</option>
-    <option value="algeria">الجزائر</option>
-    <option value="sudan">السودان</option>
-    <option value="libya">ليبيا</option>
-    <option value="palestine">فلسطين</option>
-    <option value="syria">سوريا</option>
-    <option value="turkey">تركيا</option>
-    <option value="usa">الولايات المتحدة</option>
-    <option value="uk">المملكة المتحدة</option>
-    <option value="canada">كندا</option>
-    <option value="france">فرنسا</option>
-    <option value="germany">ألمانيا</option>
-    <option value="italy">إيطاليا</option>
-    <option value="spain">إسبانيا</option>
-    <option value="india">الهند</option>
-    <option value="pakistan">باكستان</option>
-    <option value="brazil">البرازيل</option>
-    <option value="mexico">المكسيك</option>
-    <option value="china">الصين</option>
-    <option value="japan">اليابان</option>
-    <option value="south-korea">كوريا الجنوبية</option>
-    <option value="australia">أستراليا</option>
-  </select>
-
-  <div id="trends-container" class="hidden">
-    <h2>الترندات الحالية</h2>
-    <ul id="trends-list"></ul>
+  <div>
+    <label for="country">اختر الدولة:</label>
+    <select id="country">
+      <option value="Worldwide">العالم</option>
+      <option value="Algeria">الجزائر</option>
+      <option value="Argentina">الأرجنتين</option>
+      <option value="Australia">أستراليا</option>
+      <option value="Austria">النمسا</option>
+      <option value="Bahrain">البحرين</option>
+      <option value="Belarus">بيلاروس</option>
+      <option value="Belgium">بلجيكا</option>
+      <option value="Brazil">البرازيل</option>
+      <option value="Canada">كندا</option>
+      <option value="Chile">تشيلي</option>
+      <option value="Colombia">كولومبيا</option>
+      <option value="Denmark">الدنمارك</option>
+      <option value="Dominican Republic">جمهورية الدومينيكان</option>
+      <option value="Ecuador">الإكوادور</option>
+      <option value="Egypt">مصر</option>
+      <option value="France">فرنسا</option>
+      <option value="Germany">ألمانيا</option>
+      <option value="Ghana">غانا</option>
+      <option value="Greece">اليونان</option>
+      <option value="Guatemala">غواتيمالا</option>
+      <option value="India">الهند</option>
+      <option value="Indonesia">إندونيسيا</option>
+      <option value="Ireland">أيرلندا</option>
+      <option value="Israel">إسرائيل</option>
+      <option value="Italy">إيطاليا</option>
+      <option value="Japan">اليابان</option>
+      <option value="Jordan">الأردن</option>
+      <option value="Kenya">كينيا</option>
+      <option value="Korea">كوريا</option>
+      <option value="Kuwait">الكويت</option>
+      <option value="Latvia">لاتفيا</option>
+      <option value="Lebanon">لبنان</option>
+      <option value="Malaysia">ماليزيا</option>
+      <option value="Mexico">المكسيك</option>
+      <option value="Netherlands">هولندا</option>
+      <option value="New Zealand">نيوزيلندا</option>
+      <option value="Nigeria">نيجيريا</option>
+      <option value="Norway">النرويج</option>
+      <option value="Oman">عمان</option>
+      <option value="Pakistan">باكستان</option>
+      <option value="Panama">بنما</option>
+      <option value="Peru">بيرو</option>
+      <option value="Philippines">الفلبين</option>
+      <option value="Poland">بولندا</option>
+      <option value="Portugal">البرتغال</option>
+      <option value="Puerto Rico">بورتو ريكو</option>
+      <option value="Qatar">قطر</option>
+      <option value="Russia">روسيا</option>
+      <option value="Saudi Arabia">السعودية</option>
+      <option value="Singapore">سنغافورة</option>
+      <option value="South Africa">جنوب أفريقيا</option>
+      <option value="Spain">إسبانيا</option>
+      <option value="Sweden">السويد</option>
+      <option value="Switzerland">سويسرا</option>
+      <option value="Thailand">تايلاند</option>
+      <option value="Turkey">تركيا</option>
+      <option value="Ukraine">أوكرانيا</option>
+      <option value="United Arab Emirates">الإمارات</option>
+      <option value="United Kingdom">المملكة المتحدة</option>
+      <option value="United States">الولايات المتحدة</option>
+      <option value="Venezuela">فنزويلا</option>
+      <option value="Vietnam">فيتنام</option>
+    </select>
+    <button onclick="getTrend()">عرض الترند</button>
   </div>
+
+  <div id="time-reason" style="display:none;"></div>
+  <div id="trend" class="trends-wrapper"></div>
 </div>
 
-<script src="script.js"></script>
+<script>
+function getDynamicTimeRange(hour){
+  if(hour < 9) return {start:"06:00",end:"09:00",reason:"في الصباح الناس يتصفحون تويتر قبل العمل أو الدراسة."};
+  if(hour < 12) return {start:"12:00",end:"14:00",reason:"في وقت الظهيرة تكون استراحة الغداء ومتابعة الأخبار."};
+  if(hour < 20) return {start:"17:00",end:"20:00",reason:"في المساء أعلى نشاط للمتابعين بعد العمل."};
+  return {start:"20:00",end:"23:00",reason:"في المساء المتأخر نشاط المتابعين مرتفع قبل النوم."};
+}
+
+async function getTrend() {
+  const country = document.getElementById("country").value;
+  const trendBox = document.getElementById("trend");
+  const timeReasonBox = document.getElementById("time-reason");
+  trendBox.innerHTML = `<p>جاري التحميل...</p>`;
+  timeReasonBox.style.display = "none";
+
+  try {
+    const response = await fetch(`/trends/${encodeURIComponent(country)}`);
+    const data = await response.json();
+
+    trendBox.innerHTML = "";
+    const localHour = new Date().getHours();
+    const tweetTimeRange = getDynamicTimeRange(localHour);
+
+    timeReasonBox.style.display = "block";
+    timeReasonBox.innerHTML = `<b>أفضل وقت للتفاعل حالياً :</b> ${tweetTimeRange.start} - ${tweetTimeRange.end}<br><b>السبب:</b> ${tweetTimeRange.reason}`;
+
+    data.forEach((t)=>{
+      const div = document.createElement("div");
+      div.className = "trend-card hot";
+      div.innerHTML = `<a href="${t.link}" target="_blank">${t.name}</a>
+        <div class="time-box">آخر تحديث: الآن</div>`;
+      trendBox.appendChild(div);
+    });
+
+  } catch(e) {
+    trendBox.innerHTML = `<p>فشل في التحميل، حاول لاحقاً.</p>`;
+    console.error(e);
+  }
+}
+</script>
 </body>
 </html>
